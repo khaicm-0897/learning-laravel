@@ -2,11 +2,22 @@
 
 namespace App\Repositories;
 
+use Illuminate\Database\Eloquent\Model;
 use App\Repositories\RepositoryInterface;
 
 abstract class BaseRepository implements RepositoryInterface
 {
     protected $model;
+
+        /**
+     * BaseRepository construct
+     * @param Model $model
+     * @return void
+     */
+    public function __construct(Model $model)
+    {
+        $this->model = $model;
+    }
 
     /**
      * Get all
