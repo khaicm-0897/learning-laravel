@@ -43,8 +43,7 @@ class SendMailCommand extends Command
     {
         $users = $this->userRepository->getAll();
         if (!empty($users)) {
-            SendMailJob::dispatch($users)
-                ->delay(now()->addMinutes(10));
+            SendMailJob::dispatch($users);
         }
     }
 }
