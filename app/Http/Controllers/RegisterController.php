@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\RegisterRequest;
 use Illuminate\Support\Facades\Hash;
 use App\Models\User;
@@ -14,7 +15,11 @@ class RegisterController extends Controller
         try {
             $type = $request->avatar->getClientOriginalExtension();
             $newNameAvatar = time() . '.' . $type;
-            $request->file('avatar')->move(public_path('/image'), $newNameAvatar);
+            Storage::putFileAs(
+                'avatars',
+                $request->file('avatar'),
+                $newNameAvatar
+            );
 
             return User::create([
                 'name' => $request->name,

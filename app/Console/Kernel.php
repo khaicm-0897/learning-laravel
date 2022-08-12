@@ -3,7 +3,6 @@
 namespace App\Console;
 
 use Carbon\Carbon;
-use Commands\SendMailCommand;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -16,7 +15,7 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        SendMailCommand::class,
+        Commands\SendMailCommand::class,
     ];
 
     /**
