@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\RegisterController;
 
 
@@ -20,3 +21,4 @@ Route::get('/register', function () {
 });
 
 Route::post('/register', [RegisterController::class, 'register'])->name('register');
+Route::resource('users', UserController::class)->except(['create', 'store']);
