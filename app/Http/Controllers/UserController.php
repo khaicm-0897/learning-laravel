@@ -2,24 +2,34 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Requests\UpdateUserRequest;
+use App\Repositories\User\UserRepositoryInterface;
 
 class UserController extends Controller
 {
+    protected $userRepository;
+
+    /**
+     * UserController construct
+     * 
+     * UserRepositoryInterface $userRepository
+     * @return void
+     */
+    public function __construct(
+        UserRepositoryInterface $userRepository
+    ) {
+        $this->userRepository = $userRepository;
+    }
+
     /**
      * Display a listing of the resource.
      *
-     * @return \Illuminate\Http\Response
+     * @return define response
      */
     public function index()
     {
-        $users = DB::table('users')
-            ->select('name', 'email', 'avatar')
-            ->orderBy('name', 'asc')
-            ->get();
+        $users = $this->userRepository->getAll();
 
         return response()->json($users);
     }
@@ -27,15 +37,13 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * int  $id
+     * @return define response
      */
     public function show($id)
     {
         try {
-            $user = DB::table('users')
-                ->select('name', 'email', 'avatar')
-                ->find($id);
+            $user = $this->userRepository->find($id);
 
             return response()->json($user);
         } catch (\Exception $e) {
@@ -48,13 +56,13 @@ class UserController extends Controller
     /**
      * Show the form for editing the specified resource.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * int  $id
+     * @return define response
      */
     public function edit($id)
     {
         try {
-            $user = DB::table('users')->find($id);
+            $user = $this->userRepository->find($id);
 
             return response()->json($user);
         } catch (\Exception $e) {
@@ -67,36 +75,30 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * UpdateUserRequest  $request
+     * int  $id
+     * @return define response
      */
     public function update(UpdateUserRequest $request, $id)
     {
         try {
-            $user = DB::table('users')->find($id);
+            $user = $this->userRepository->find($id);
 
-            if ($request->avatar == $user->avatar) {
-                $newNameAvatar = $request->avatar;
-            } else {
-                if (Storage::exists('avatars/' . $user->avatar)) {
-                    Storage::delete('avatars/' . $user->avatar);
+            if (Storage::exists('avatars/' . $user->avatar)) {
+                Storage::delete('avatars/' . $user->avatar);
 
-                    $type = $request->avatar->getClientOriginalExtension();
-                    $newNameAvatar = time() . '.' . $type;
-                    Storage::putFileAs(
-                        'avatars',
-                        $request->file('avatar'),
-                        $newNameAvatar
-                    );
-                }
+                $extension = $request->avatar->getClientOriginalExtension();
+                $newNameAvatar = time() . '.' . $extension;
+                Storage::putFileAs(
+                    'avatars',
+                    $request->file('avatar'),
+                    $newNameAvatar
+                );
             }
-            DB::table('users')
-                ->where('id', $id)
-                ->update([
-                    'name' => $request->name,
-                    'avatar' => $newNameAvatar,
-                ]);
+            $this->userRepository->update($id, [
+                'name' => $request->name,
+                'avatar' => $newNameAvatar,
+            ]);
 
             return response()->json([
                 'message' => 'success',
@@ -111,19 +113,17 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
+     * int  $id
+     * @return define response
      */
     public function destroy($id)
     {
         try {
-            $user = DB::table('users')->find($id);
+            $user = $this->userRepository->find($id);
 
             if (Storage::exists('avatars/' . $user->avatar)) {
                 Storage::delete('avatars/' . $user->avatar);
-                DB::table('users')
-                    ->where('id', $id)
-                    ->delete();
+                $user = $this->userRepository->delete($id);
             }
 
             return response()->json([

@@ -3,18 +3,47 @@
 namespace App\Repositories\User;
 
 use App\Exceptions\UserException;
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 use App\Repositories\BaseRepository;
 
 class UserRepository extends BaseRepository implements UserRepositoryInterface
 {
     /**
      * UserRepository construct
-     * @param User $model
+     * 
+     * DB $db
      * @return void
      */
-    public function __construct(User $model)
+    public function __construct(DB $db)
     {
-        $this->model = $model;
+        $this->model = $db::table('users');
+    }
+
+    /**
+     * Get all
+     * 
+     * @return collection
+     */
+    public function getAll()
+    {
+        return $this->model
+            ->select('name', 'email', 'avatar')
+            ->orderBy('name', 'asc')
+            ->get();
+    }
+
+    /**
+     * Get one
+     * 
+     * int $id
+     * @return stdClass object
+     */
+    public function find($id)
+    {
+        $result = $this->model
+            ->select('name', 'email', 'avatar')
+            ->find($id);
+
+        return $result;
     }
 }
